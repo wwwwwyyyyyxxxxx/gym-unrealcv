@@ -37,8 +37,8 @@ class UnrealCvTracking_1v1(gym.Env):
         self.cam_id = setting['cam_id']
         self.target_list = setting['targets']
         self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
-        self.continous_actions_forward = setting['continous_actions_forward']
+        self.continuous_actions = setting['continuous_actions']
+        self.continuous_actions_forward = setting['continuous_actions_forward']
         self.max_distance = setting['max_distance']
         self.min_distance = setting['min_distance']
         self.max_direction = setting['max_direction']
@@ -69,10 +69,10 @@ class UnrealCvTracking_1v1(gym.Env):
             action_space = spaces.Discrete(len(self.discrete_actions))
             action_space_forward = action_space
         elif self.action_type == 'Continuous':
-            action_space = spaces.Box(low=np.array(self.continous_actions['low']),
-                                      high=np.array(self.continous_actions['high']))
-            action_space_forward = spaces.Box(low=np.array(self.continous_actions_forward['low']),
-                                              high=np.array(self.continous_actions_forward['high']))
+            action_space = spaces.Box(low=np.array(self.continuous_actions['low']),
+                                      high=np.array(self.continuous_actions['high']))
+            action_space_forward = spaces.Box(low=np.array(self.continuous_actions_forward['low']),
+                                              high=np.array(self.continuous_actions_forward['high']))
         self.action_space = [action_space, action_space_forward]
 
         # define observation space,
@@ -105,7 +105,7 @@ class UnrealCvTracking_1v1(gym.Env):
         if 'Ram' in self.target:
             self.random_agent = baseline.RandomAgent(action_space_forward)
         if 'Nav' in self.target:
-            self.random_agent = baseline.GoalNavAgent(self.continous_actions_forward, self.reset_area, self.target)
+            self.random_agent = baseline.GoalNavAgent(self.continuous_actions_forward, self.reset_area, self.target)
         if 'Internal' in self.target:
             self.unrealcv.random_character(self.target_list[1])
         if self.target == 'Adv' or self.target == 'PZR':

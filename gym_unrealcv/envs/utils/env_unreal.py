@@ -18,7 +18,7 @@ class RunUnreal():
         assert os.path.exists(self.path2binary), \
             'Please load env binary in UnrealEnv and Check the env_bin in setting file!'
 
-    def start(self, docker, resolution=(160, 160)):
+    def start(self, docker, resolution=(160, 160), gpu_id=0):
         # check binary exist
         port = self.read_port()
         self.write_resolution(resolution)
@@ -34,13 +34,13 @@ class RunUnreal():
                 port += 1
                 self.write_port(port)
             #self.modify_permission(self.path2env)
-            self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
+            self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map, gpu_id))
             # self.env.daemon = True
             self.env.start()
             print ('Running docker-free env, pid:{}'.format(self.env.pid))
 
         print ('Please wait for a while to launch env......')
-        time.sleep(10)
+        time.sleep(20)
         return env_ip, port
 
     def get_path2UnrealEnv(self):
@@ -48,13 +48,13 @@ class RunUnreal():
         gympath = os.path.dirname(gym_unrealcv.__file__)
         return os.path.join(gympath, 'envs', 'UnrealEnv')
 
-    def run_proc(self, path2env, map):
+    def run_proc(self, path2env, map, gpu_id=0):
         # os.system('export Display=:0.0')
         if 'linux' in sys.platform:
-            cmd = 'exec nohup {path2env} '  # linux
+            cmd = 'CUDA_VISIBLE_DEVICES={gpu_id} exec nohup {path2env} '   # linux
         elif 'win' in sys.platform:
             cmd = 'start /b  {path2env} '  # win
-        cmd_exe = cmd.format(path2env=os.path.abspath(path2env))
+        cmd_exe = cmd.format(gpu_id=gpu_id, path2env=os.path.abspath(path2env))
         if map is not None:
             cmd_exe += map
         print (cmd_exe)
@@ -65,7 +65,11 @@ class RunUnreal():
             self.docker.close()
         else:
             import signal
-            os.kill(self.env.pid+1, signal.SIGTERM)
+            print("killing...")
+            os.kill(self.env.pid, signal.SIGKILL)
+            #self.env.kill()
+            print("killed")
+            
 
     def modify_permission(self, path):
         cmd = 'sudo chown {USER} {ENV_PATH} -R'

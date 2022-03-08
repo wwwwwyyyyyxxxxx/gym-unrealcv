@@ -28,11 +28,11 @@
 	[  -6000, -700,  100]
     ],
 	"reset_area" : [-7000, -2500, -2000, 300],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
 	},
-	"continous_actions_forward": {
+	"continuous_actions_forward": {
 		"high": [100,     30],
 		"low":  [50,     -30]
 	},

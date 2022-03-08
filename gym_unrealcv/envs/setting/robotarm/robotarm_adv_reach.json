@@ -1,0 +1,43 @@
+{
+	"env_name": "UnrealCvRobotAdversarialArm_reach",
+	"env_bin": "unrealcv_binary/LinuxNoEditor/ArmUE4/Binaries/Linux/ArmUE4",
+	"env_map": "",
+	"cam_view_id": 0,
+	"maxsteps": 100,
+	"camera_pose": [
+		[-76,-275,385,0,90,-45]
+	],
+	"objects": ["Cube_17"],
+	"discrete_actions": [
+		[ 1, 0, 0, 0, 0],
+		[-1, 0, 0, 0, 0],
+		[ 0, 1, 0, 0, 0],
+		[ 0,-1, 0, 0, 0],
+		[ 0, 0, 1, 0, 0],
+		[ 0, 0,-1, 0, 0],
+		[ 0, 0, 0, 1, 0],
+		[ 0, 0, 0,-1, 0]
+	],
+	"continuous_actions": {
+		"high": [ 5,  5,  5, 5],
+		"low":  [-5, -5, -5, -5]
+	},
+	"goal_range": {
+		"high": [ 90,  280,  250],
+		"low":  [-90,  100,    0]
+	},
+	"init_pose_range": {
+		"high": [90, 15, 30, 30, 0],
+		"low": [-90, -15, -30, -30, 0]
+	},
+	"pose_range": {
+		"high": [ 130,  60,  90, 45, 70],
+		"low":  [-130, -90, -60, -45, 0]
+	},
+    "lower_mult": 50,
+    "upper_mult": 150,
+	"camera_range": {
+        "high": [600, 600, 600, -5, 360, 180],
+		"low": [-600, -600, -600, -45, 0, -180]
+	}
+}

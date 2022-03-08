@@ -67,11 +67,11 @@
 		[2514, -4576]
 	],
 
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [20,    20],
 		"low":  [-20,  -20]
 	},
-	"continous_actions_player": {
+	"continuous_actions_player": {
 		"high": [50,     30],
 		"low":  [30,     -30]
 	},

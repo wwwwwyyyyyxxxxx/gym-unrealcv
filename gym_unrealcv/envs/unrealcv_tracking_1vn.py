@@ -42,8 +42,8 @@ class UnrealCvTracking_1vn(gym.Env):
         self.player_list = setting['players']
         self.discrete_actions = setting['discrete_actions']
         self.discrete_actions_player = setting['discrete_actions_player']
-        self.continous_actions = setting['continous_actions']
-        self.continous_actions_player = setting['continous_actions_player']
+        self.continuous_actions = setting['continuous_actions']
+        self.continuous_actions_player = setting['continuous_actions_player']
         self.max_steps = setting['max_steps']
         self.max_distance = setting['max_distance']
         self.min_distance = setting['min_distance']
@@ -99,9 +99,9 @@ class UnrealCvTracking_1vn(gym.Env):
             self.discrete_actions = np.array(self.discrete_actions)
             self.discrete_actions_player = np.array(self.discrete_actions_player)
         elif self.action_type == 'Continuous':
-            self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
-                                      high=np.array(self.continous_actions['high'])) for i in range(self.max_player_num)]
-            player_action_space = spaces.Discrete(len(self.continous_actions_player))
+            self.action_space = [spaces.Box(low=np.array(self.continuous_actions['low']),
+                                      high=np.array(self.continuous_actions['high'])) for i in range(self.max_player_num)]
+            player_action_space = spaces.Discrete(len(self.continuous_actions_player))
 
         self.count_steps = 0
 
@@ -128,7 +128,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target:
             self.random_agents = [baseline.RandomAgent(player_action_space) for i in range(self.max_player_num)]
         elif 'Nav' in self.target:
-            self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target, 0
+            self.random_agents = [baseline.GoalNavAgent(self.continuous_actions_player, self.reset_area, self.target, 0
                                                         ) for i in range(self.max_player_num)]
 
         for player in self.player_list:

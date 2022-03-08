@@ -19,7 +19,7 @@
 		[0, -10],
 		[0,  0]
 	],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [80,  20],
 		"low":  [-80,  -20]
 	},

@@ -42,11 +42,11 @@
 	[-1300,-700,  200,  800, 250, 600],
 	[ -200, 400,   200,  800, 250, 600],
 	[ -200, 400,  -800, -200, 250, 600]],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [ 5,   5],
 		"low":  [-5,  -5]
 	},
-	"continous_actions_player": {
+	"continuous_actions_player": {
 		"high": [100,     30],
 		"low":  [50,     -30]
 	},

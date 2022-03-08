@@ -27,7 +27,7 @@ class UnrealCvRobotArm_reach(gym.Env):
         self.max_steps = setting['maxsteps']
         self.camera_pose = setting['camera_pose']
         self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
+        self.continuous_actions = setting['continuous_actions']
         self.pose_range = setting['pose_range']
         self.goal_range = setting['goal_range']
         self.env_bin = setting['env_bin']
@@ -44,8 +44,8 @@ class UnrealCvRobotArm_reach(gym.Env):
         if self.action_type == 'Discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
         elif self.action_type == 'Continuous':
-            self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
-                                           high=np.array(self.continous_actions['high']))
+            self.action_space = spaces.Box(low=np.array(self.continuous_actions['low']),
+                                           high=np.array(self.continuous_actions['high']))
 
         self.pose_low = np.array(self.pose_range['low'])
         self.pose_high = np.array(self.pose_range['high'])
@@ -104,6 +104,8 @@ class UnrealCvRobotArm_reach(gym.Env):
 
         # reward function
         reward = - 0.01 * distance_xyz
+
+        info['success'] = False
         if arm_state or collision:  # reach limitation or collision
             done = True
             reward = -10
@@ -113,11 +115,13 @@ class UnrealCvRobotArm_reach(gym.Env):
             if self.count_reach >= self.count_th:
                 done = True
                 reward = (1 - 0.05 * distance_xyz) * 100
+                info['success'] = True
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz, action)
         info['Done'] = done
         info['Reward'] = reward
+        info['Estimator_Reward'] = 0
         return state, reward, done, info
 
     def seed(self, seed=None):
@@ -197,4 +201,8 @@ class UnrealCvRobotArm_reach(gym.Env):
                              heights[int(self.count_eps % 3)]])
         return goal
 
+    def set_mode(self, mode, data_dir_root=None, start_eps=0):
+        return
 
+    def construct_pose_estimator(self, pose_estimator_class, need_seq, **kwargs):
+        return

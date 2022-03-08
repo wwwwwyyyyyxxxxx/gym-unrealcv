@@ -31,7 +31,7 @@ class UnrealCvTracking_spline(gym.Env):
         self.cam_id = setting['cam_id']
         self.target_list = setting['targets']
         self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
+        self.continuous_actions = setting['continuous_actions']
         self.max_distance = setting['max_distance']
         self.max_direction = setting['max_direction']
         self.objects_env = setting['objects_list']
@@ -57,8 +57,8 @@ class UnrealCvTracking_spline(gym.Env):
         if self.action_type == 'Discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
         elif self.action_type == 'Continuous':
-            self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
-                                           high=np.array(self.continous_actions['high']))
+            self.action_space = spaces.Box(low=np.array(self.continuous_actions['low']),
+                                           high=np.array(self.continuous_actions['high']))
 
         # define observation space,
         #  color, depth, rgbd,...

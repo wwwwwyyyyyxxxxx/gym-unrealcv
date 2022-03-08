@@ -41,11 +41,11 @@
 		[ -1000,  2200,  110]
     ],
 	"reset_area" : [-1200, 600, 800, 4000, 100, 110],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [100,     30],
 		"low":  [-100,   -30]
 	},
-	"continous_actions_player": {
+	"continuous_actions_player": {
 		"high": [100,     30],
 		"low":  [50,     -30]
 	},

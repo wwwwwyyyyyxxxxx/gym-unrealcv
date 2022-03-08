@@ -39,8 +39,8 @@ class UnrealCvMC(gym.Env):
         self.target_list = setting['targets']
         self.discrete_actions = setting['discrete_actions']
         self.discrete_actions_player = setting['discrete_actions_player']
-        self.continous_actions = setting['continous_actions']
-        self.continous_actions_player = setting['continous_actions_player']
+        self.continuous_actions = setting['continuous_actions']
+        self.continuous_actions_player = setting['continuous_actions_player']
         self.max_steps = setting['max_steps']
         self.max_obstacles = setting['max_obstacles']
         self.height = setting['height']
@@ -101,9 +101,9 @@ class UnrealCvMC(gym.Env):
             self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.num_cam)]
             player_action_space = [spaces.Discrete(len(self.discrete_actions_player)) for i in range(1)]
         elif self.action_type == 'Continuous':
-            self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
-                                            high=np.array(self.continous_actions['high'])) for i in range(self.num_cam)]
-            player_action_space = spaces.Discrete(len(self.continous_actions_player))
+            self.action_space = [spaces.Box(low=np.array(self.continuous_actions['low']),
+                                            high=np.array(self.continuous_actions['high'])) for i in range(self.num_cam)]
+            player_action_space = spaces.Discrete(len(self.continuous_actions_player))
 
         self.count_steps = 0
 
@@ -131,12 +131,12 @@ class UnrealCvMC(gym.Env):
         self.unrealcv.set_rotation(0, [0, -180, -90])
         self.unrealcv.set_obj_location("TargetBP", [-3000, -3000, 220])  # remove the additional target
         if 'Random' in self.nav:
-            self.random_agents = [RandomAgent(self.continous_actions_player) for i in range(self.num_target)]
+            self.random_agents = [RandomAgent(self.continuous_actions_player) for i in range(self.num_target)]
         if 'Goal' in self.nav:
             if not self.test:
-                self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, 'Mid') for i in range(self.num_target)]
+                self.random_agents = [GoalNavAgent(self.continuous_actions_player, self.reset_area, 'Mid') for i in range(self.num_target)]
             else:
-                self.random_agents = [GoalNavAgentTest(self.continous_actions_player, goal_list=self.goal_list)
+                self.random_agents = [GoalNavAgentTest(self.continuous_actions_player, goal_list=self.goal_list)
                                       for i in range(self.num_target)]
 
         self.unrealcv.set_interval(30)

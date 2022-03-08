@@ -65,7 +65,7 @@ For example, [search_rr_door41.json](../gym_unrealcv/envs/setting/search_rr_door
 	],
 	
 	# the range of each action dimension,[liner velocity, angular velocity, trigger]
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [100, 45, 1],
 		"low":  [0,  -45, 0]
 	}

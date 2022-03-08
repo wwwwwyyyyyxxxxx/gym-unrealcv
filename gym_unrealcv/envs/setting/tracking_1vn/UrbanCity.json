@@ -45,11 +45,11 @@
 		[   500,  500,  100]
     ],
 	"reset_area" : [-1500, 1000, -1500, 1000, 135, 140],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [100,     30],
 		"low":  [-100,   -30]
 	},
-	"continous_actions_player": {
+	"continuous_actions_player": {
 		"high": [100,     30],
 		"low":  [50,     -30]
 	},

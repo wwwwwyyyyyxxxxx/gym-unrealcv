@@ -45,6 +45,20 @@ for action in ['Discrete', 'Continuous']:  # action type
                     max_episode_steps=100
                         )
 
+# ------------------------------------------------------------------
+for action in ['Discrete', 'Continuous']:  # action type
+    for obs in ['Pose', 'Color', 'Depth', 'Rgbd']:
+            register(
+                    id='UnrealAdversarialArm-{action}{obs}-v0'.format(action=action, obs=obs),
+                    entry_point='gym_unrealcv.envs:UnrealCvAdversarial_RobotArm_reach',
+                    kwargs={'setting_file': 'adversarialrobotarm/robotarm_adv_reach.json',
+                            'action_type': action,
+                            'observation_type': obs,
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=100
+                        )
+
 # -----------------------------------------------------------------------
 # Tracking
 # "End-to-end Active Object Tracking via Reinforcement Learning", ICML 2018
@@ -138,7 +152,7 @@ for env in ['MCRoom', 'Garden', 'UrbanTree']:
                     )
 
 
-for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage', 'Garden']:
+for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type

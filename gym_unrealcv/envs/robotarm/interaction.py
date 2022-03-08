@@ -110,8 +110,8 @@ class Robotarm(UnrealCv):
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)  # for gym>=0.10`
         elif observation_type == 'Pose':
-            s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continous_actions']['high']  # arm_pose, target_position, action
-            s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continous_actions']['low']
+            s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continuous_actions']['high']  # arm_pose, target_position, action
+            s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continuous_actions']['low']
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 

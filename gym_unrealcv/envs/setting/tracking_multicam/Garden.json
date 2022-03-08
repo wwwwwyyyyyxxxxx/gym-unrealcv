@@ -60,11 +60,11 @@
 	[-7500, -8900],
 	[-8200, -8900]
 	],
-	"continous_actions": {
+	"continuous_actions": {
 		"high": [20,    20],
 		"low":  [-20,  -20]
 	},
-	"continous_actions_player": {
+	"continuous_actions_player": {
 		"high": [100,     30],
 		"low":  [50,     -30]
 	},

@@ -30,7 +30,7 @@ binary_list = dict(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument("-e", "--env", nargs='?', default='RealisticRoom',
+    parser.add_argument("-e", "--env", nargs='?', default='Arm',
                         help='Select the binary to download')
     args = parser.parse_args()
     cmd_load = 'wget '+binary_list[args.env]
