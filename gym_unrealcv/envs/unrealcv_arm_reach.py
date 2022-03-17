@@ -13,8 +13,8 @@ from gym_unrealcv.envs.robotarm.interaction import Robotarm
 class UnrealCvRobotArm_reach(gym.Env):
     def __init__(self,
                  setting_file,
-                 reset_type='keyboard',    # keyboard, bp
-                 action_type='continuous',   # 'discrete', 'continuous'
+                 reset_type='keyboard',  # keyboard, bp
+                 action_type='continuous',  # 'discrete', 'continuous'
                  observation_type='Pose',  # 'color', 'depth', 'rgbd' . 'pose'
                  version=0,  # train, test
                  docker=False,
@@ -67,13 +67,13 @@ class UnrealCvRobotArm_reach(gym.Env):
         env_ip, env_port = self.unreal.start(self.docker, self.resolution)
 
         # connect UnrealCV
-        self.unrealcv =Robotarm(cam_id=self.cam_id,
-                                pose_range=self.pose_range,
-                                port=env_port,
-                                ip=env_ip,
-                                targets=[],
-                                env=self.unreal.path2env,
-                                resolution=self.resolution)
+        self.unrealcv = Robotarm(cam_id=self.cam_id,
+                                 pose_range=self.pose_range,
+                                 port=env_port,
+                                 ip=env_ip,
+                                 targets=[],
+                                 env=self.unreal.path2env,
+                                 resolution=self.resolution)
         self.launched = True
         return self.launched
 
@@ -145,6 +145,7 @@ class UnrealCvRobotArm_reach(gym.Env):
             init_pose = [0, 0, 0, 0, 0]
             self.goal_pos_trz = self.sample_goal(self.count_eps)
             self.count_th = 3
+
         self.unrealcv.set_arm_pose(init_pose, 'new')
 
         self.goal_pos_xyz = self.trz2xyz(self.goal_pos_trz)
@@ -163,26 +164,26 @@ class UnrealCvRobotArm_reach(gym.Env):
         self.unreal.close()
 
     def render(self, mode='rgb_array', close=False):
-        if close==True:
+        if close:
             self.unreal.close()
         return self.unrealcv.img_color
 
     def get_distance(self, target, current, norm=False, n=3):
         error = np.array(target[:n]) - np.array(current[:n])
         if norm:
-            error = error/np.array(self.goal_range['high'])
+            error = error / np.array(self.goal_range['high'])
         distance = np.linalg.norm(error)
         return distance
 
     def xyz2trz(self, xyz):
-        theta = np.arctan2(xyz[0], xyz[1])/np.pi*180
+        theta = np.arctan2(xyz[0], xyz[1]) / np.pi * 180
         r = np.linalg.norm(xyz[:2])
         z = xyz[2]
         return np.array([theta, r, z])
 
     def trz2xyz(self, trz):
-        x = np.sin(trz[0]/180.0*np.pi)*trz[1]
-        y = np.cos(trz[0]/180.0*np.pi)*trz[1]
+        x = np.sin(trz[0] / 180.0 * np.pi) * trz[1]
+        y = np.cos(trz[0] / 180.0 * np.pi) * trz[1]
         z = trz[2]
         return np.array([x, y, z])
 
