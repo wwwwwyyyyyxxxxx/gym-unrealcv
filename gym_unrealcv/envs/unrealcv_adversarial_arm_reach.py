@@ -1,4 +1,3 @@
-import math
 import os
 import random
 import time
@@ -11,7 +10,9 @@ from gym_unrealcv.envs.adversarial_robotarm.interaction import Adversarial_Robot
 from pose.models.integral import Integral
 from pose.utils.imutils import draw_labelmap, to_torch
 from pose.utils.transforms import transform
+from unreal.virtual_db import vdb
 import json
+import torch.nn.functional as F
 
 
 class UnrealCvAdversarial_RobotArm_reach(gym.Env):
@@ -23,6 +24,8 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
                  version=0,  # train, test
                  docker=False,
                  resolution=(80, 80),
+                 anno_type="2d",
+                 gpu_id=0,
                  ):
 
         # load and process setting
@@ -34,15 +37,22 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
         self.continuous_actions = setting['continuous_actions']
         self.pose_range = setting['pose_range']
         self.goal_range = setting['goal_range']
+        self.camera_range = setting['camera_range']
         self.env_bin = setting['env_bin']
         self.env_map = setting['env_map']
         self.objects = setting['objects']
+        self.need_in_cam = setting['need_in_cam']
         self.docker = docker
         self.reset_type = reset_type
         self.resolution = resolution
         self.version = version
         self.launched = False
         self.is_train = True
+        self.anno_type = anno_type
+        self.gpu_id = gpu_id
+
+        self.cam_name = "FusionCameraActor3_2"
+        self.actor_name = "RobotArmActor_3"
 
         # define action type
         self.action_type = action_type
@@ -67,6 +77,7 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
         # define observation space,
         # color, depth, rgbd...
         self.launch_env()
+        self.tmp_joint_dir = os.path.abspath("./data/tmp_joint_%d/" % self.unrealcv.port)
         self.observation_type = observation_type
         self.observation_space = self.unrealcv.define_observation(self.cam_id, observation_type, setting)
 
@@ -75,7 +86,7 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
             return True
         # start unreal env
         self.unreal = env_unreal.RunUnreal(ENV_BIN=self.env_bin, ENV_MAP=self.env_map)
-        env_ip, env_port = self.unreal.start(self.docker, self.resolution)
+        env_ip, env_port = self.unreal.start(self.docker, self.resolution, gpu_id=self.gpu_id)
 
         # connect UnrealCV
         self.unrealcv = Adversarial_Robotarm(cam_id=self.cam_id,
@@ -134,7 +145,7 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
 
         estimator_reward = 0
         if not is_out_of_cam:
-            estimator_reward = float(self.estimator_reward(image, action, pose=pose, keypoints_2d=keypoints_2d))
+            estimator_reward = float(self.estimator_reward(action, keypoints_2d=keypoints_2d))
         reward += estimator_reward
 
         # Get observation
@@ -154,6 +165,8 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
     def reset(self):
         self.launch_env()
         self.count_eps += 1
+
+        self.camera_pose = self.reset_camera_pose()
 
         while True:
             if self.is_train or self.need_save_img:
@@ -187,7 +200,7 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
         self.count_reach = 0
         self.unrealcv.set_obj_location(self.objects[0], [0, 0, -50])
         self.unrealcv.set_obj_rotation(self.objects[0], [0, 0, 0])
-        self.arm_pose_last = self.unrealcv.get_arm_pose('new')
+        # self.arm_pose_last = self.unrealcv.get_pose()
         self.unrealcv.empty_msgs_buffer()
 
         if self.need_save_img:
@@ -270,9 +283,16 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
                 self.integral = Integral()
         self.lambda_pose_estimator = 16
 
-    def estimator_reward(self, image, action, pose=None, keypoints_2d=None):
+    def estimator_reward(self, state, action, keypoints_2d=None):
         if self.pose_estimator is None:
             return 0
+        if self.observation_type == "Pose" or self.observation_type == "Depth":
+            img_rgb = self.unrealcv.read_image(self.cam_id, "lit")
+            image = img_rgb.astype(np.float32)
+        elif self.observation_type == "Color":
+            image = state
+        elif self.observation_type == "Rgbd":
+            image = state[:, :, 3]
         if self.anno_type == '3d':
             if self.need_seq:
                 output = self.pose_estimator.get_pose(image, action)
@@ -280,6 +300,7 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
                 output = self.pose_estimator.get_pose(image)
             if len(output) == 4:
                 output = np.insert(output, 4, 0)
+            pose = self.unrealcv.get_pose()
             return F.mse_loss(torch.tensor(output), torch.tensor(pose), reduction='mean') / self.lambda_pose_estimator
         elif self.anno_type == 'heatmap' or self.anno_type == '2d':
             if self.need_seq:
@@ -295,6 +316,8 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
             return 0
 
     def out_of_cam(self):
+        if not self.need_in_cam:
+            return False, None
         keypoints_2d = self.unrealcv.get_keypoints_2d(self.tmp_joint_dir, self.vertex_seq, self.actor_name)
         return (keypoints_2d < 0).any(), keypoints_2d
 
@@ -343,3 +366,13 @@ class UnrealCvAdversarial_RobotArm_reach(gym.Env):
         mult = np.random.uniform(self.lower_mult, self.upper_mult, action.shape)
         action = action * (0.01 * mult)
         return action
+
+    def reset_camera_pose(self):
+        # randomize camera position and fix
+        dist, pitch, yaw, roll = np.random.uniform(self.camera_range['low'], self.camera_range['high'])
+        x = int(-dist * np.cos(pitch * np.pi / 180) * np.cos(yaw * np.pi / 180))
+        y = int(-dist * np.cos(pitch * np.pi / 180) * np.sin(yaw * np.pi / 180))
+        z = int(-dist * np.sin(pitch * np.pi / 180))
+        camera_pose = np.array([x, y, z, pitch, yaw, roll])
+        self.unrealcv.set_camera_pose(camera_pose)
+        return camera_pose

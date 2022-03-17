@@ -51,16 +51,18 @@ for action in ['Discrete', 'Continuous']:  # action type
 # ------------------------------------------------------------------
 for action in ['Discrete', 'Continuous']:  # action type
     for obs in ['Pose', 'Color', 'Depth', 'Rgbd']:
-        register(
-            id='UnrealAdversarialArm-{action}{obs}-v0'.format(action=action, obs=obs),
-            entry_point='gym_unrealcv.envs:UnrealCvAdversarial_RobotArm_reach',
-            kwargs={'setting_file': 'adversarialrobotarm/robotarm_adv_reach.json',
-                    'action_type': action,
-                    'observation_type': obs,
-                    'docker': use_docker,
-                    },
-            max_episode_steps=100
-        )
+        for gpu_id in range(10):
+            register(
+                id='UnrealAdversarialArm-{action}{obs}-v{gpu_id}'.format(action=action, obs=obs, gpu_id=gpu_id),
+                entry_point='gym_unrealcv.envs:UnrealCvAdversarial_RobotArm_reach',
+                kwargs={'setting_file': 'adversarialrobotarm/robotarm_adv_reach.json',
+                        'action_type': action,
+                        'observation_type': obs,
+                        'docker': use_docker,
+                        'gpu_id': gpu_id,
+                        },
+                max_episode_steps=100
+            )
 
 # -----------------------------------------------------------------------
 # Tracking

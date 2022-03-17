@@ -2,8 +2,8 @@ from gym_unrealcv.envs.utils.unrealcv_basic import UnrealCv
 import numpy as np
 import time
 from gym import spaces
-import random
-import re
+import unreal.virtual_db as vdb
+from unreal.arm import get_joint_2d_raw
 
 
 class Adversarial_Robotarm(UnrealCv):
@@ -17,6 +17,7 @@ class Adversarial_Robotarm(UnrealCv):
                 low=np.array(pose_range['low']),
         )
         super(Adversarial_Robotarm, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
+        self.port = port
 
         if targets == 'all':
             self.targets = self.get_objects()
@@ -55,9 +56,7 @@ class Adversarial_Robotarm(UnrealCv):
         self.set_arm_pose(pose_tmp)
         return limit
 
-    def get_pose(self):
-        # gym_unrealcv/envs/robotarm/interaction.py
-        # --- not used ---
+    def get_pose(self, cam_id=0, mode="hard"):
         res = None
         while res is None:
             res = self.client.request('vget /arm/pose')
@@ -91,8 +90,14 @@ class Adversarial_Robotarm(UnrealCv):
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)  # for gym>=0.10`
         elif observation_type == 'Pose':
-            s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continuous_actions']['high'] + setting['camera_range']['high'] + setting['pose_xyz_range']['high'] # arm_pose, target_position, action
-            s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continuous_actions']['low'] + setting['camera_range']['low'] + setting['pose_xyz_range']['low']
+            s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continuous_actions']['high'] # arm_pose, target_position, action
+            s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continuous_actions']['low']
+            if 'obs_cam' in setting.keys() and setting['obs_cam']:
+                s_high += [setting['camera_range']['high'][0] for _ in range(3)] + setting['camera_range']['high'][1:]
+                s_low += [-setting['camera_range']['high'][0] for _ in range(3)] + setting['camera_range']['low'][1:]
+            if 'obs_tip' in setting.keys() and setting['obs_tip']:
+                s_high += setting['pose_xyz_range']['high']
+                s_low += setting['pose_xyz_range']['low']
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
@@ -188,21 +193,11 @@ class Adversarial_Robotarm(UnrealCv):
     def save_img(self, data_dir):
         self.client.request('vset /data_capture/capture_frame ' + data_dir)
 
-    def set_camera_pose(self):
-        # randomize camera position and fix
-        dist = np.random.uniform(500, 800)
-        pitch = -np.random.uniform(5, 45)
-        yaw = np.random.uniform(0, 360)
-        roll = np.random.uniform(0, 0)
+    def set_camera_pose(self, camera_pose):
         res = None
         while res is None:
-            res = self.client.request('vset /camera/1/rotation {pitch} {yaw} {roll}'.format(**locals()))
-        x = int(-dist * cos(pitch * pi / 180) * cos(yaw * pi / 180))
-        y = int(-dist * cos(pitch * pi / 180) * sin(yaw * pi / 180))
-        z = int(-dist * sin(pitch * pi / 180))
+            res = self.client.request('vset /camera/1/location %f %f %f' % tuple(camera_pose[:3]))
 
         res = None
         while res is None:
-            res = self.client.request('vset /camera/1/location {x} {y} {z}'.format(**locals()))
-
-        return np.array([x, y, z, pitch, yaw, roll])
+            res = self.client.request('vset /camera/1/rotation %f %f %f' % tuple(camera_pose[-3:]))

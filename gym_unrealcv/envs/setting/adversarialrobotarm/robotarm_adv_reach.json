@@ -2,7 +2,7 @@
 	"env_name": "UnrealCvRobotAdversarialArm_reach",
 	"env_bin": "unrealcv_binary/newbinary/ArmUE4/Binaries/Linux/ArmUE4",
 	"env_map": "",
-	"cam_view_id": 0,
+	"cam_view_id": 1,
 	"maxsteps": 100,
 	"camera_pose": [
 		[-76,-275,385,0,90,-45]
@@ -37,11 +37,14 @@
     "lower_mult": 90,
     "upper_mult": 110,
 	"camera_range": {
-        "high": [600, 600, 600, -5, 360, 180],
-		"low": [-600, -600, -600, -45, 0, -180]
+        "high": [600, -5, 360, 0],
+		"low": [0, -45, 0, 0]
 	},
 	"pose_xyz_range": {
 		"high": [280,  280,  280],
 		"low":  [-280,  -280,  -280]
-	}
+	},
+	"obs_cam": 0,
+	"obs_tip": 1,
+	"need_in_cam": 0,
 }
